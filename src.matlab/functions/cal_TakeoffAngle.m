@@ -4,7 +4,7 @@ ps = 0;
 direc=0;
 Ierr=0;
 
-filename = 'Example.vel';
+filename = './Example.vel';
 delimiterIn = ' ';
 headerlinesIn = 1;
 

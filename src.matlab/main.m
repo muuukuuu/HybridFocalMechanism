@@ -11,48 +11,60 @@ StationPos = importdata(Stafilename, delimiterIn);
 Xs = StationPos.data(:,1);
 Ys = StationPos.data(:,2);
 Zs = StationPos.data(:,3);
-nd=numel(Xs)-1;
+nd=numel(Xs);
 
 
 % ---[ Read File ]---------------------------------------------------------
-n=5;  % <--- increment of grid search [deg]
+gd=5;  % <--- increment of grid search [deg]
 
 k=1;
-for i=1:360/n+1
-    for j=1:90/n+1
-        Pazim(k)=n*(i-1);
-        Pinc(k)=n*(j-1);
+for i=1:360/gd+1
+    for j=1:90/gd+1
+        Pazim(k)=gd*(i-1);
+        Pinc(k)=gd*(j-1);
         k=k+1;
     end
 end
 
 
+
 % ---[ Reading of polarity consistent focal mechanism]---------------------
-Polfilename='./Example.pol';
-delimiterIn = ' ';
-headerlinesIn = 0;
-fpdata = importdata(Polfilename, delimiterIn, headerlinesIn);
-    
-fpstrike = fpdata(:,1);
-fpdip    = fpdata(:,2);
-fprake   = fpdata(:,3);
-       
-fpazim = fpstrike-90;      % Azimuth of dipping orientation (Slip vector)
-fpinc = 90-fpdip;        % Inclination of dipping orientation (Slip vector)
+% Polfilename='./Example.pol';
+% delimiterIn = ' ';
+% headerlinesIn = 0;
+
+% fpdata = importdata(Polfilename, delimiterIn, headerlinesIn);    
+% fpstrike = fpdata(:,1);
+% fpdip    = fpdata(:,2);
+% fprake   = fpdata(:,3);
+%        
+% fpazim = fpstrike-90;      % Azimuth of dipping orientation (Slip vector)
+% fpinc = 90-fpdip;        % Inclination of dipping orientation (Slip vector)
 
 
 % ---[depth for each events]-----------------------------------------------
 xt=11000;yt=10500;zt=4300;
 Depth=zt;
 
-x =   Xs - ones(7,1)*xt;
-y =   Ys - ones(7,1)*yt;
-z = -(Zs - ones(7,1)*zt);
+x =   Xs - ones(nd,1)*xt;
+y =   Ys - ones(nd,1)*yt;
+z = -(Zs - ones(nd,1)*zt);
 [Azimuth] = rel2deg(x,y,z);
 [Ierr,Take_off] = cal_TakeoffAngle(xt,yt,zt,Xs,Ys,Zs);
 d2r   = pi/180;
 
 Type(1:6)=[1 1 -1 1 1 1];
+
+% ---[Grid search]---
+[fault_par]=gridsearch_pol(Azimuth, Take_off, Type, nd, gd);
+fpstrike = fault_par(:,1);
+fpdip = fault_par(:,2);
+fprake = fault_par(:,3);
+
+fpazim = fpstrike-90;      % Azimuth of dipping orientation (Slip vector)
+fpinc = 90-fpdip;        % Inclination of dipping orientation (Slip vector)
+
+
 
 
 % figure ---
@@ -80,7 +92,7 @@ for i = 1:nd
            plot(x(i),y(i),'ko','MarkerFaceColor','k','MarkerSize',10);
    elseif  Type(i) == -1 
            plot(x(i),y(i),'ko','MarkerFaceColor','w','MarkerSize',10);
-   end;
+   end
    hold on;
 end
 
@@ -90,7 +102,7 @@ end
 subplot(1,2,2)
 MatlabPoleplot2(0,0,1);hold on;
 
-n=5
+n=gd;
 a=(0:n:360);
 b=(0:n:90);
 % if 
